@@ -1,0 +1,181 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor de Música</title>
+    <!-- Agregamos Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <!-- Estilos personalizados -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 2rem;
+        }
+        .song-player-card {
+            display: flex;
+            flex-wrap: wrap;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .song-player-card img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            object-fit: cover;
+        }
+        .song-details {
+            flex: 1;
+            padding: 20px;
+        }
+        h3 {
+            margin-bottom: 1rem;
+        }
+        .player {
+            margin: 1rem 0;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .btn-like, .btn-dislike {
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .btn-like:hover {
+            background-color: #28a745; /* Verde */
+            color: white;
+            transform: scale(1.05);
+        }
+        .btn-dislike:hover {
+            background-color: #dc3545; /* Rojo */
+            color: white;
+            transform: scale(1.05);
+        }
+        .btn-like.active {
+            background-color: #28a745; /* Verde */
+            color: white;
+        }
+        .btn-dislike.active {
+            background-color: #dc3545; /* Rojo */
+            color: white;
+        }
+        .comment-section {
+            margin-top: 2rem;
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .comment-section h4 {
+            margin-bottom: 1rem;
+        }
+        footer p {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        /* Estilos personalizados para el reproductor de audio */
+        audio {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'users:oyente_dashboard' %}">Oyente</a>
+        <div class="ms-auto">
+            <a href="{% url 'users:logout' %}" class="btn btn-danger">Cerrar Sesión</a>
+        </div>
+    </div>
+</nav>
+<div class="container mt-3">
+    <!-- Botón para regresar -->
+    <button onclick="window.history.back()" class="btn btn-secondary">⟵ Volver</button>
+</div>
+<!-- Contenedor principal -->
+<div class="container">
+    <div class="song-player-card">
+        <!-- Imagen de la canción -->
+        <img src="{% if song.song_cover %}{{ song.song_cover.url }}{% else %}{% static 'img/default_song.jpg' %}{% endif %}" alt="Imagen de la canción">
+        <!-- Detalles y reproductor -->
+        <div class="song-details">
+            <h3>{{ song.title }}</h3>
+            <p>
+                <strong>Álbum:</strong> {{ song.album.title }}<br>
+                <strong>Artista:</strong> {{ song.album.musician.first_name }} {{ song.album.musician.last_name }}<br>
+                <strong>Duración:</strong> {{ song.get_duration_display }} minutos.<br>
+                <strong>Género:</strong> {{ song.genre }}<br>
+
+            </p>
+            <form method="post" action="{% url 'musico:follow_artist' song.album.musician.id %}">
+                {% csrf_token %}
+                {% if song.album.musician.id in following_ids %}
+                    <button type="submit" class="btn btn-danger follow-btn">Dejar de Seguir</button>
+                {% else %}
+                    <button type="submit" class="btn btn-primary follow-btn">Seguir</button>
+                {% endif %}
+            </form>
+            <!-- Reproductor -->
+            <div class="player">
+                <audio controls>
+                    <source src="{{ song.file.url }}" type="audio/mpeg">
+                    Tu navegador no soporta el elemento de audio.
+                </audio>
+            </div>
+
+            <!-- Botones de interacción -->
+            <div class="btn-group">
+                <form method="POST" action="{% url 'oyente:like_song' song.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-like {% if user_vote == 'like' %}active{% endif %}">👍 Like</button>
+                </form>
+                <form method="POST" action="{% url 'oyente:dislike_song' song.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-dislike {% if user_vote == 'dislike' %}active{% endif %}">👎 Dislike</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de comentarios -->
+    <div class="comment-section">
+        <h4>Comentarios</h4>
+        <!-- Mostrar comentarios existentes -->
+        <ul class="list-group mb-4">
+            {% for comment in song.comments.all %}
+                <li class="list-group-item">
+                    <strong class="text-primary">{{ comment.user.first_name }}</strong>: {{ comment.content }}
+                    <span class="text-muted float-end">{{ comment.created_at|date:"d M Y H:i" }}</span>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-center text-muted">No hay comentarios aún.</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Formulario para agregar nuevo comentario -->
+        <h5>Agregar un Comentario</h5>
+        <form method="POST" action="{% url 'oyente:comment_song' song.id %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <textarea name="content" class="form-control" rows="3" placeholder="Escribe tu comentario aquí..."></textarea>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Comentar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Pie de página -->
+<footer class="text-center mt-5 py-3">
+    <p>© 2023 Oyente - Melodify</p>
+</footer>
+</body>
+</html>

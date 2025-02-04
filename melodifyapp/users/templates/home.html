@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melodify</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+</head>
+<body>
+    <!-- Encabezado -->
+    <header>
+        <nav>
+            <a href="{% url 'users:login' %}" class="boton">Iniciar Sesión</a>
+            <a href="{% url 'users:register' %}" class="boton">Registrarse</a>
+        </nav>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="contenido-central">
+        <h1 class="titulo-animado">MELODIFY</h1>
+        <p class="descripcion-animada">"Crea, comparte y transforma: la música evoluciona contigo."</p>
+        <p class="mensaje-listo">¡EMPIEZA YA!</p>
+    </main>
+</body>
+</html>

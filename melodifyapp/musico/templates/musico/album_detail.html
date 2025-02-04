@@ -1,0 +1,101 @@
+<!-- filepath: /home/pablof/Documentos/Melodify_Oficial/MelodifyApp/melodifyapp/musico/templates/musico/album_detail.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Álbum - {{ album.title }}</title>
+    <!-- Agregamos Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <!-- Estilos personalizados -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .album-detail-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 2rem;
+        }
+        .album-detail-card img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        footer p {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'musico:album_list' %}">Mis Álbumes</a>
+        <div class="ms-auto">
+            <a href="{% url 'users:profile' %}" class="btn btn-info">Mi Perfil</a>
+            <a href="{% url 'users:logout' %}" class="btn btn-danger">Cerrar Sesión</a>        </div>
+    </div>
+</nav>
+<div class="container mt-3">
+    <!-- Botón para regresar a la pagina de dashboard-->
+    <a href="{% url 'musico:album_list' %}" class="btn btn-secondary">⟵ Volver</a>
+    <!-- Botón para subir nueva canción -->
+    <a href="{% url 'musico:upload_music' album.id %}" class="btn btn-success">Subir Nueva Canción</a>
+</div>
+
+<div class="container">
+    <div class="album-detail-card">
+        <div class="row">
+            <div class="col-md-4">
+                <img src="{% if album.cover_image %}{{ album.cover_image.url }}{% else %}https://via.placeholder.com/300x300.png?text=Portada%20del%20Álbum{% endif %}" alt="{{ album.title }}">
+            </div>
+            <div class="col-md-8">
+                <h2>{{ album.title }}</h2>
+                <p>
+                    <strong>Fecha de lanzamiento:</strong> {{ album.release_date }}<br>
+                    <strong>Canciones:</strong> {{ songs.count }}
+                </p>
+                <a href="{% url 'musico:edit_album' album.id %}" class="btn btn-warning">Editar Álbum</a>
+                <a href="{% url 'musico:delete_album' album.id %}" class="btn btn-danger">Eliminar Álbum</a>
+            </div>
+        </div>
+        <hr>
+        <h4 class="mt-4">Canciones del Álbum</h4>
+        {% if songs %}
+            <ul class="list-group">
+                {% for song in songs %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ song.title }} - {{ song.genre }} - {{ song.get_duration_display }} minutos
+                        <div>
+                            <a href="{% url 'musico:edit_song' song.id %}" class="btn btn-sm btn-warning">Editar</a>
+                            <a href="{% url 'musico:delete_song' song.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+                            <a href="{% url 'musico:add_comment' song.id %}" class="btn btn-info btn-sm">Comentarios</a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No hay canciones en este álbum.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pie de página -->
+<footer class="text-center mt-5 py-3">
+    <p>© 2023 Oyente - Melodify</p>
+</footer>
+
+<!-- Agregar Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
